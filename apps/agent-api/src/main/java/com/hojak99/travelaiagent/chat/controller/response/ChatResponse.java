@@ -5,7 +5,8 @@ package com.hojak99.travelaiagent.chat.controller.response;
  */
 public record ChatResponse(
         String sessionId,
-        String message
+        String message,
+        String status
 ) {
     // TODO: ASK_USER, FINAL, ERROR 등 종료 상태와 구조화 결과를 설계한다.
 }
