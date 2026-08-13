@@ -19,7 +19,7 @@ public class QueryEngineService {
         ConversationState conversationState = conversationStateRepository.loadOrCreate(queryCommand.sessionId());
         synchronized (conversationState) {
             QueryRuntimeResult queryRuntimeResult = queryRuntimeService.run(conversationState, queryCommand.message());
-            return new QueryResult(conversationState.getSessionId(), queryRuntimeResult.message(), queryRuntimeResult.status());
+            return new QueryResult(conversationState.getSessionId(), queryRuntimeResult.message(), queryRuntimeResult.status().name());
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.hojak99.travelaiagent.chat.domain;
 
 import lombok.*;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,22 +20,33 @@ public class ConversationState {
     private List<String> preferences;
     private List<String> confirmActivities;
     private String pendingQuestion;
+    private int iteration;
 
     public static ConversationState create(String sessionId) {
-        return ConversationState.builder()
-                .sessionId(sessionId)
-                .messages(new ArrayList<>())
-                .travelers(new ArrayList<>())
-                .preferences(new ArrayList<>())
-                .confirmActivities(new ArrayList<>())
-                .build();
+        return ConversationState.builder().sessionId(sessionId).messages(new ArrayList<>()).travelers(new ArrayList<>()).preferences(new ArrayList<>()).confirmActivities(new ArrayList<>()).iteration(0).build();
     }
 
     public void addUserMessage(String message) {
-        this.messages.add(new ConversationMessage(ConversationMessage.Role.USER, message));
+        messages.add(new ConversationMessage(ConversationMessage.Role.USER, message));
     }
 
     public void addAssistantMessage(String message) {
-        this.messages.add(new ConversationMessage(ConversationMessage.Role.ASSISTANT, message));
+        messages.add(new ConversationMessage(ConversationMessage.Role.ASSISTANT, message));
+    }
+
+    public void startIteration() {
+        iteration++;
+    }
+
+    public int iteration() {
+        return iteration;
+    }
+
+    public boolean hasRequiredTravelInformation() {
+        return destination != null && !destination.isBlank() && startDate != null && endDate != null && budget != null && !budget.isBlank();
+    }
+
+    public void setPendingQuestion(String pendingQuestion) {
+        this.pendingQuestion = pendingQuestion;
     }
 }
