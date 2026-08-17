@@ -11,7 +11,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class QueryEngineServiceTest {
 
     private final ConversationStateRepository repository = new ConversationStateRepository();
-    private final QueryEngineService queryEngine = new QueryEngineService(repository, new QueryRuntimeService());
+    private final QueryEngineService queryEngine = new QueryEngineService(
+            repository,
+            new QueryRuntimeService((instructions, messages) -> "여행 날짜와 예산을 알려주세요."));
 
     @Test
     void keepsConversationStateForSameSession() {
