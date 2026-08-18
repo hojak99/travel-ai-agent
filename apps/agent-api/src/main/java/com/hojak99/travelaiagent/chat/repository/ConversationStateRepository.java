@@ -4,6 +4,7 @@ import com.hojak99.travelaiagent.chat.domain.ConversationState;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -12,5 +13,9 @@ public class ConversationStateRepository {
 
     public ConversationState loadOrCreate(String sessionId) {
         return conversationStateMap.computeIfAbsent(sessionId, ConversationState::create);
+    }
+
+    public Optional<ConversationState> find(String sessionId) {
+        return Optional.ofNullable(conversationStateMap.get(sessionId));
     }
 }

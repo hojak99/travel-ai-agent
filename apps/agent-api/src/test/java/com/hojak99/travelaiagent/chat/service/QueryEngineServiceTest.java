@@ -7,6 +7,7 @@ import com.hojak99.travelaiagent.chat.repository.ConversationStateRepository;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class QueryEngineServiceTest {
 
@@ -34,5 +35,19 @@ class QueryEngineServiceTest {
 
         assertThat(repository.loadOrCreate("study-1").getMessages()).hasSize(2);
         assertThat(repository.loadOrCreate("study-2").getMessages()).hasSize(2);
+    }
+
+    @Test
+    void getsCurrentStateWithoutCreatingUnknownSession() {
+        queryEngine.submit(new QueryCommand("study-1", "여행 일정을 추천해줘"));
+
+        var state = queryEngine.getState("study-1");
+
+        assertThat(state.sessionId()).isEqualTo("study-1");
+        assertThat(state.messages()).hasSize(2);
+        assertThat(state.pendingQuestion()).isNotBlank();
+        assertThat(state.iteration()).isEqualTo(1);
+        assertThatThrownBy(() -> queryEngine.getState("unknown"))
+                .isInstanceOf(SessionNotFoundException.class);
     }
 }

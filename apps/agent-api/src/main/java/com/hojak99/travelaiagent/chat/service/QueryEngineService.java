@@ -4,6 +4,7 @@ import com.hojak99.travelaiagent.chat.domain.ConversationState;
 import com.hojak99.travelaiagent.chat.domain.QueryCommand;
 import com.hojak99.travelaiagent.chat.domain.QueryResult;
 import com.hojak99.travelaiagent.chat.domain.QueryRuntimeResult;
+import com.hojak99.travelaiagent.chat.controller.response.ConversationStateResponse;
 import com.hojak99.travelaiagent.chat.repository.ConversationStateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,14 @@ public class QueryEngineService {
         synchronized (conversationState) {
             QueryRuntimeResult queryRuntimeResult = queryRuntimeService.run(conversationState, queryCommand.message());
             return new QueryResult(conversationState.getSessionId(), queryRuntimeResult.message(), queryRuntimeResult.status().name());
+        }
+    }
+
+    public ConversationStateResponse getState(String sessionId) {
+        ConversationState conversationState = conversationStateRepository.find(sessionId)
+                .orElseThrow(() -> new SessionNotFoundException(sessionId));
+        synchronized (conversationState) {
+            return ConversationStateResponse.from(conversationState);
         }
     }
 }
