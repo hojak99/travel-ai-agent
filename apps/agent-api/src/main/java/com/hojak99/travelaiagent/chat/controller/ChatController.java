@@ -21,9 +21,6 @@ public class ChatController {
 
     private final QueryEngineService queryEngineService;
 
-    /**
-     * Controller는 State 관리, LLM 호출, Tool 실행을 직접 담당하지 않는다.
-     */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ChatResponse chat(@Valid @RequestBody ChatRequest request) {
         QueryCommand queryCommand = new QueryCommand(request.sessionId(), request.message());
