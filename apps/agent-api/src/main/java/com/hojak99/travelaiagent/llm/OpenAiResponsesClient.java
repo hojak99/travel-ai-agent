@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * OpenAI Responses API의 요청·응답 형식을 내부 LlmClient 계약으로 변환한다.
+ */
 @Component
 @RequiredArgsConstructor
 public class OpenAiResponsesClient implements LlmClient {
@@ -18,6 +21,9 @@ public class OpenAiResponsesClient implements LlmClient {
     private final RestClient openAiRestClient;
     private final OpenAiProperties properties;
 
+    /**
+     * 역할별 대화를 API 입력으로 변환하고 첫 output_text를 Runtime 응답으로 반환한다.
+     */
     @Override
     public String generate(String instructions, List<ConversationMessage> messages) {
         if (properties.apiKey() == null || properties.apiKey().isBlank()) {

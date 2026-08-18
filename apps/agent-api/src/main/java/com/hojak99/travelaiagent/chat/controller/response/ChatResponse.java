@@ -8,5 +8,5 @@ public record ChatResponse(
         String message,
         String status
 ) {
-    // TODO: ASK_USER, FINAL, ERROR 등 종료 상태와 구조화 결과를 설계한다.
+    // TODO(Phase 2): 문자열 status를 구조화된 AgentDecision 응답으로 교체한다.
 }

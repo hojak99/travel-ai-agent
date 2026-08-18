@@ -7,6 +7,9 @@ import com.hojak99.travelaiagent.llm.LlmClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+/**
+ * 한 사용자 입력에서 판단·종료 상태를 만들고 그 결과를 ConversationState에 반영한다.
+ */
 @Service
 @RequiredArgsConstructor
 public class QueryRuntimeService {

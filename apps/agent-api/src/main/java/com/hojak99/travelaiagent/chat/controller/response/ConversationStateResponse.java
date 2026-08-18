@@ -22,6 +22,9 @@ public record ConversationStateResponse(
         String pendingQuestion,
         int iteration
 ) {
+    /**
+     * 잠금 안에서 읽은 도메인 State를 변경 불가능한 API snapshot으로 복사한다.
+     */
     public static ConversationStateResponse from(ConversationState state) {
         return new ConversationStateResponse(
                 state.getSessionId(),
