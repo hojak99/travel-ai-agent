@@ -55,20 +55,20 @@ QueryEngine
 
 ## Claude Code 개념 대응
 
-| Claude Code 개념 | 이 프로젝트의 대응 |
-|---|---|
-| QueryEngine Facade | 여행 Session의 Agent 실행 진입점 |
-| query Kernel | 한 번의 사용자 요청을 처리하는 QueryRuntime |
-| Query State | ConversationState와 구조화된 여행 조건 |
-| Tool Registry | Local Tool과 MCP Tool의 등록·검색·실행 목록 |
-| Agent Definition | Research·Route·Budget·Validation Agent의 역할과 계약 |
-| Agent Runner | 격리된 Context에서 Sub-agent 실행 |
-| Coordinator | Agent와 Tool의 순서·분기·재시도·종료 조정 |
-| TaskType / Checkpoint | 여행 계획 작업 종류와 중단 후 재개 위치 |
-| Compaction | 대화·Tool 결과 압축과 핵심 State 복구 |
-| Permission | 예약·결제·캘린더 등록 전 사용자 승인 |
-| Hooks | Tool·Compaction·외부 쓰기·오류 생명주기 확장점 |
-| Store / Event | Agent Runtime과 React 사이의 상태·이벤트 연결 |
+| Claude Code 개념      | 이 프로젝트의 대응                                   |
+|-----------------------|------------------------------------------------------|
+| QueryEngine Facade    | 여행 Session의 Agent 실행 진입점                     |
+| query Kernel          | 한 번의 사용자 요청을 처리하는 QueryRuntime          |
+| Query State           | ConversationState와 구조화된 여행 조건               |
+| Tool Registry         | Local Tool과 MCP Tool의 등록·검색·실행 목록          |
+| Agent Definition      | Research·Route·Budget·Validation Agent의 역할과 계약 |
+| Agent Runner          | 격리된 Context에서 Sub-agent 실행                    |
+| Coordinator           | Agent와 Tool의 순서·분기·재시도·종료 조정            |
+| TaskType / Checkpoint | 여행 계획 작업 종류와 중단 후 재개 위치              |
+| Compaction            | 대화·Tool 결과 압축과 핵심 State 복구                |
+| Permission            | 예약·결제·캘린더 등록 전 사용자 승인                 |
+| Hooks                 | Tool·Compaction·외부 쓰기·오류 생명주기 확장점       |
+| Store / Event         | Agent Runtime과 React 사이의 상태·이벤트 연결        |
 
 ## 메시지 구성 원칙
 
@@ -120,10 +120,32 @@ user message
 - 긴 Context를 줄여도 중요한 여행 제약 조건이 유지되는가?
 - 실패·취소·승인 대기 후 Agent가 올바른 지점에서 재개되는가?
 
+## 코드 주석 규칙
+
+- 핵심 클래스와 메서드에는 **무슨 역할을 맡고 왜 이 경계가 필요한지** 짧게 주석으로 남긴다.
+- 특히 State 전이, Runtime 종료 조건, Tool 실행, 권한, 재시도·취소처럼 의도가 코드만으로 드러나지 않는 메서드는 1~3줄의 Javadoc을 작성한다.
+- 코드가 어떻게 동작하는지 줄마다 반복 설명하지 말고, 설계 의도·불변식·주의할 부작용만 설명한다.
+- 단순 getter, 명백한 위임, Spring 설정 boilerplate에는 불필요한 주석을 달지 않는다.
+- 동작이나 책임이 바뀌면 관련 주석도 함께 수정한다. 코드와 맞지 않는 오래된 주석은 남기지 않는다.
+
+```java
+/**
+ * 동일 Session의 한 번의 Agent 실행을 직렬화해 State 갱신 순서를 보존한다.
+ */
+public QueryResult submit(QueryCommand command) { ...}
+```
+
+## 코드 구조 규칙
+
+- `@Component`, `@Service`, `@Repository` 등 Spring Bean 내부에 별도 class·record·enum을 정의하지 않는다.
+- `RuntimeCancellationRegistry.CancellationSignal`처럼 Runtime 상태나 컴포넌트 간 계약을 나타내는 타입은 역할과 생명주기에 맞는 `domain` 패키지에 독립 파일로 분리한다.
+- Spring Bean은 의존성 연결과 동작을 담당하고, 전달 데이터·상태·결과 타입은 Bean 구현에 종속되지 않게 유지한다.
+
 ## 문서 작성 규칙
 
 - 설명은 한글로 작성한다.
-- `Agent`, `Tool`, `System Prompt`, `State`, `Context`, `Compaction`, `MCP`, `Sub-agent`, `QueryEngine`, `TAO` 같은 핵심 용어는 원문 표기를 유지한다.
+- `Agent`, `Tool`, `System Prompt`, `State`, `Context`, `Compaction`, `MCP`, `Sub-agent`, `QueryEngine`, `TAO` 같은 핵심 용어는
+  원문 표기를 유지한다.
 - 문서는 문제 정의 → Agent 실행 흐름 → 상태·이벤트 변화 → 실패·복구 → 직접 구현 과제 순서로 작성한다.
 - Spring 계층 분리나 클래스 네이밍 자체를 학습 목표로 삼지 않는다.
 - 구현하지 않은 기능을 구현한 것처럼 문서에 쓰지 않는다.

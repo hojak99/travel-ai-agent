@@ -1,19 +1,20 @@
 package com.hojak99.travelaiagent.chat.controller;
 
-import jakarta.validation.Valid;
 import com.hojak99.travelaiagent.chat.controller.request.ChatRequest;
+import com.hojak99.travelaiagent.chat.controller.response.CancelChatResponse;
 import com.hojak99.travelaiagent.chat.controller.response.ChatResponse;
 import com.hojak99.travelaiagent.chat.controller.response.ConversationStateResponse;
 import com.hojak99.travelaiagent.chat.domain.QueryCommand;
 import com.hojak99.travelaiagent.chat.domain.QueryResult;
 import com.hojak99.travelaiagent.chat.service.QueryEngineService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -23,8 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/chat")
 public class ChatController {
-
-
     private final QueryEngineService queryEngineService;
 
     /**
@@ -43,5 +42,13 @@ public class ChatController {
     @GetMapping(value = "/{sessionId}/state", produces = MediaType.APPLICATION_JSON_VALUE)
     public ConversationStateResponse state(@PathVariable String sessionId) {
         return queryEngineService.getState(sessionId);
+    }
+
+    /**
+     * 실행 중인 세션에 협력적 취소 신호를 전달한다.
+     */
+    @PostMapping(value = "/{sessionId}/cancel", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CancelChatResponse cancel(@PathVariable String sessionId) {
+        return new CancelChatResponse(sessionId, queryEngineService.cancel(sessionId));
     }
 }

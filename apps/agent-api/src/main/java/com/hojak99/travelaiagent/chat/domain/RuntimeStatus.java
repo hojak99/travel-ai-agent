@@ -7,5 +7,6 @@ public enum RuntimeStatus {
     NEED_USER_INPUT,
     FINAL,
     MAX_ITERATIONS,
+    CANCELLED,
     ERROR
 }

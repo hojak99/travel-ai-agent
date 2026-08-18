@@ -2,6 +2,8 @@ package com.hojak99.travelaiagent.llm;
 
 import com.hojak99.travelaiagent.chat.domain.ConversationMessage;
 import com.hojak99.travelaiagent.config.properties.OpenAiProperties;
+import com.hojak99.travelaiagent.llm.domain.OpenAiOutputContent;
+import com.hojak99.travelaiagent.llm.domain.OpenAiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -56,17 +58,8 @@ public class OpenAiResponsesClient implements LlmClient {
                 .filter(item -> "message".equals(item.type()))
                 .flatMap(item -> item.content().stream())
                 .filter(content -> "output_text".equals(content.type()))
-                .map(OutputContent::text)
+                .map(OpenAiOutputContent::text)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("OpenAI 응답에서 output_text를 찾을 수 없습니다."));
-    }
-
-    private record OpenAiResponse(List<OutputItem> output) {
-    }
-
-    private record OutputItem(String type, List<OutputContent> content) {
-    }
-
-    private record OutputContent(String type, String text) {
     }
 }

@@ -24,7 +24,11 @@ State 갱신
 다음 사용자 입력 또는 다음 Loop
 ```
 
-현재는 LLM이 Think를 수행하지 않는다. `ConversationState.hasRequiredTravelInformation()`이 임시 판단기 역할을 한다. 03단계에서 이 위치를 실제 LLM Decision으로 교체한다.
+현재는 LLM이 Think를 수행하지 않는다. `ConversationState.hasRequiredTravelInformation()`이 임시 판단기 역할을 한다. 03단계에서 이 위치를 실제 LLM
+Decision으로 교체한다.
+
+현재 Runtime의 취소는 협력적 취소 (cooperative cancellation)다. 실행 중인 동기 HTTP 호출을 즉시 끊지는 않지만, 호출 전후에 취소 신호를 확인해 늦게 도착한 LLM 결과가
+State에 반영되지 않게 한다. 실제 transport 수준 중단은 10단계에서 확장한다.
 
 ## Travel State
 
@@ -75,9 +79,16 @@ USER 메시지 저장
          ├─ pendingQuestion 제거
          ├─ 다음 일정 생성 단계 안내
          └─ FINAL 반환
+
+실행 중 취소
+    └─ 늦게 도착한 결과 폐기 + CANCELLED 반환
+
+LLM 호출 실패
+    └─ 내부 오류를 노출하지 않는 메시지 + ERROR 반환
 ```
 
-현재 필수 조건은 목적지, 시작일, 종료일, 예산이다. 실제 값 추출은 아직 구현하지 않았기 때문에 새 세션은 `NEED_USER_INPUT`으로 끝난다. 이것은 실패가 아니라 다음 사용자 입력을 기다리는 정상적인 Agent 종료 상태다.
+현재 필수 조건은 목적지, 시작일, 종료일, 예산이다. 실제 값 추출은 아직 구현하지 않았기 때문에 새 세션은 `NEED_USER_INPUT`으로 끝난다. 이것은 실패가 아니라 다음 사용자 입력을 기다리는 정상적인
+Agent 종료 상태다.
 
 ## RuntimeStatus
 
@@ -85,6 +96,7 @@ USER 메시지 저장
 NEED_USER_INPUT  추가 정보를 기다리는 정상 상태
 FINAL            현재 실행에서 최종 결과를 반환한 상태
 MAX_ITERATIONS   한 번의 실행이 허용된 반복 횟수를 넘은 상태
+CANCELLED        사용자가 실행을 취소한 정상 종료 상태
 ERROR            복구하지 못한 실행 오류
 ```
 
@@ -104,6 +116,9 @@ for (i = 0; i < MAX_ITERATIONS; i++) {
 ```
 
 LLM이 계속 Tool을 호출하거나 같은 질문을 반복하는 상황을 막기 위해 `MAX_ITERATIONS`를 둔다. 상한에 도달하면 `MAX_ITERATIONS`를 반환하고, 무한 실행하지 않는다.
+
+현재 Phase 1에서는 LLM이 빈 질문을 반환한 경우에만 같은 실행 안에서 제한적으로 다시 요청한다. 세 번 연속 유효한 질문을 만들지 못하면 `MAX_ITERATIONS`로 종료한다. Phase 2 이후에는
+구조화 Decision 파싱 실패와 Phase 3의 Tool Loop도 같은 실행 예산을 사용한다.
 
 ## 이번 구현에서 확인할 시나리오
 
@@ -133,6 +148,10 @@ State: destination/startDate/endDate/budget 없음
 - 사용자 질문과 Agent 응답을 역할과 함께 State에 저장한다.
 - `MAX_ITERATIONS` 상한을 Runtime에 두었다.
 - QueryEngine이 Runtime 결과의 상태를 API 응답까지 전달한다.
+- 실행 중인 세션을 `POST /api/chat/{sessionId}/cancel`로 취소할 수 있다.
+- `GET /api/chat/{sessionId}/state`로 메시지, pendingQuestion, iteration을 관찰할 수 있다.
+- LLM 오류를 `ERROR`, 빈 응답 반복을 `MAX_ITERATIONS`, 사용자 취소를 `CANCELLED`로 반환한다.
+- 동일 세션의 동시 요청을 직렬화해 메시지와 State 갱신 순서를 보존한다.
 
 ## 아직 구현하지 않은 것
 
@@ -141,6 +160,7 @@ State: destination/startDate/endDate/budget 없음
 - 실제 `CALL_TOOL`과 `DELEGATE`
 - Tool 결과를 Observation으로 반영
 - Compaction과 Checkpoint
+- 실행 중인 HTTP 요청 자체를 중단하는 transport 수준 취소
 
 ## 완료 기준
 
@@ -151,6 +171,7 @@ State: destination/startDate/endDate/budget 없음
 3. 다음 사용자 메시지가 이전 State와 연결되는 지점은 어디인가?
 4. LLM이 계속 행동을 반복할 때 Runtime을 어떻게 멈추는가?
 5. 현재 구현에서 자연어 여행 조건 추출은 왜 아직 되지 않는가?
+6. 취소 직후 도착한 LLM 결과를 State에 반영하면 안 되는 이유는 무엇인가?
 
 ## 다음 단계
 
